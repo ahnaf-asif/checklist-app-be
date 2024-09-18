@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES6",                         // Set the ECMAScript version
+    "module": "commonjs",                     // CommonJS for Node.js modules
+    "esModuleInterop": true,                  // Allow default imports from modules with `export =` syntax
+    "skipLibCheck": true,                     // Skip type checking of declaration files
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,                           // Enable all strict type-checking options
+    "moduleResolution": "node",               // Properly resolve Node.js modules
+    "resolveJsonModule": true,                // Support JSON import
+    "types": ["node"],                        // Include node types for process
+    "outDir": "./dist",                        // Output directory for compiled code
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["./src/**/*"],                  // Include your source files
+  "exclude": ["node_modules"]
+}
