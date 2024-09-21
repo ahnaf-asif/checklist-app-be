@@ -11,6 +11,7 @@
     "db-clear": "ts-node src/db/utils/clearDatabase.ts",
     "db-drop-tables": "ts-node src/db/utils/dropAllTables.ts",
     "db-reset": "yarn db-clear && yarn db-drop-tables && yarn db-init",
+    "db-seed": "ts-node src/db/utils/seedDatabase.ts",
     "start": "ts-node src/index.ts",
     "dev": "nodemon"
   },

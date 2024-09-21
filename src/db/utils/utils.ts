@@ -45,7 +45,24 @@ export const dropAllTables = async () => {
 
     await pool.query(clearDbSQL);
 
-    console.log('Database cleared successfully');
+    console.log('Database tables dropped successfully');
+  } catch (error) {
+    console.error('Error clearing database:', error);
+    throw error;
+  } finally {
+    await pool.end();
+  }
+};
+
+export const seedDb = async () => {
+  try {
+    const seedDbPath = path.join(dirname, 'dbSeeder.sql');
+
+    const seedDbSql = fs.readFileSync(seedDbPath, 'utf8');
+
+    await pool.query(seedDbSql);
+
+    console.log('Database is populated with data successfully');
   } catch (error) {
     console.error('Error clearing database:', error);
     throw error;
