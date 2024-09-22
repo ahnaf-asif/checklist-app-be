@@ -1,5 +1,5 @@
 import * as process from 'process';
-import { Pool } from 'pg';
+import { Pool, QueryResultRow } from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -13,10 +13,11 @@ export const pool = new Pool({
 });
 
 // We will import this query function whenever we need to do things in the database
-export const query = (text: string, params?: any[]) => {
+
+export const query = <R extends QueryResultRow = any>(text: string, params?: any[]) => {
   if (!params) {
-    return pool.query(text);
+    return pool.query<R>(text);
   }
 
-  return pool.query(text, params);
+  return pool.query<R>(text, params);
 };
