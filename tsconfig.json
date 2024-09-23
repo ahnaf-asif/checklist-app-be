@@ -10,10 +10,6 @@
     "resolveJsonModule": true,                // Support JSON import
     "types": ["node"],                        // Include node types for process
     "outDir": "./dist",                        // Output directory for compiled code
-    "baseUrl": "./",
-    "paths": {
-      "@/*": ["src/*"]
-    }
   },
   "include": ["./src/**/*"],                  // Include your source files
   "exclude": ["node_modules"]
