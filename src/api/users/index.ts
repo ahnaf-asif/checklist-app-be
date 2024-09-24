@@ -4,8 +4,8 @@ import User from '../../db/models/UserModel';
 import { getHttpStatusCode } from '../../utils/statusCode';
 import DbModel from '../../db/models/DbModel';
 
-const router = Router();
-router.get('/', async (_req, res) => {
+const userRouter = Router();
+userRouter.get('/', async (_req, res) => {
   const { val: users, err } = await User.findAll();
   if (err) {
     const status = getHttpStatusCode(err);
@@ -15,7 +15,7 @@ router.get('/', async (_req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+userRouter.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
@@ -32,7 +32,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.post('/', async (req, res) => {
+userRouter.post('/', async (req, res) => {
   const { val: user, err } = await User.create(req.body);
   if (err) {
     const status = getHttpStatusCode(err);
@@ -42,7 +42,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+userRouter.put('/:id', async (req, res) => {
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
@@ -70,7 +70,7 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+userRouter.delete('/:id', async (req, res) => {
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
@@ -83,8 +83,8 @@ router.delete('/:id', async (req, res) => {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
-    res.json({ message: `User with ID '${id}' deleted if it existed` });
+    res.json({ error: `User with ID '${id}' deleted if it existed` });
   }
 });
 
-export default router;
+export default userRouter;

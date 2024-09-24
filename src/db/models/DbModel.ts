@@ -121,4 +121,6 @@ export default class DbModel implements QueryResultRow {
       throw error;
     }
   }
+
+  [column: string]: any;
 }
