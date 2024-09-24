@@ -31,6 +31,34 @@ export default class DbModel implements QueryResultRow {
     });
   }
 
+  public static async findBy(data: Record<string, any>): Promise<Either<DbModel[]>> {
+    return Either.tryAsync<DbModel[]>(async () => {
+      const keys = Object.keys(data);
+      const values = Object.values(data);
+      const conditions = [];
+
+      for (let i = 0; i < keys.length; i++) {
+        let value = values[i];
+        const key = keys[i];
+
+        if (!this.fields.includes(key)) {
+          throw new InvalidFieldError(this.tableName, key);
+        }
+
+        if (typeof value === 'string') {
+          value = `'${value}'`;
+        }
+
+        conditions.push(`${keys[i]} = ${value}`);
+      }
+
+      const result = await query<DbModel>(
+        `SELECT * FROM ${this.tableName} WHERE ${conditions.join(' AND ')}`
+      );
+      return result.rows;
+    });
+  }
+
   public static async create(data: Record<string, any>): Promise<Either<DbModel>> {
     return Either.tryAsync<DbModel>(async () => {
       const columns = Object.keys(data).join(', ');

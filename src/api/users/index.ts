@@ -1,8 +1,9 @@
 import { Router } from 'express';
+import * as argon2 from 'argon2';
+import * as jwt from 'jsonwebtoken';
 
 import User from '../../db/models/UserModel';
 import { getHttpStatusCode } from '../../utils/statusCode';
-import DbModel from '../../db/models/DbModel';
 
 const userRouter = Router();
 userRouter.get('/', async (_req, res) => {
@@ -32,13 +33,71 @@ userRouter.get('/:id', async (req, res) => {
   }
 });
 
-userRouter.post('/', async (req, res) => {
+userRouter.post('/signup', async (req, res) => {
+  req.body.password = await argon2.hash(req.body.password);
   const { val: user, err } = await User.create(req.body);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
+  } else if (user === undefined) {
+    res.status(500).json({ error: 'Internal Server Error' });
+    return;
   } else {
-    res.json(user);
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        name: user.name
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: '1h'
+      }
+    );
+
+    res.status(201).json({ token });
+  }
+});
+
+userRouter.post('/signin', async (req, res) => {
+  const { username, password } = req.body;
+  const { val: users, err } = await User.findBy({ username });
+
+  if (err) {
+    const status = getHttpStatusCode(err);
+    res.status(status).json({ error: 'please enter a valid username and password' });
+    return;
+  }
+
+  if (users === undefined) {
+    res.status(401).json({ error: 'please enter a valid username and password' });
+    return;
+  }
+
+  try {
+    const user = users[0];
+
+    if (await argon2.verify(user.password, password)) {
+      const token = jwt.sign(
+        {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          name: user.name
+        },
+        process.env.JWT_SECRET as string,
+        {
+          expiresIn: '1h'
+        }
+      );
+
+      res.status(200).json({ token });
+    } else {
+      res.status(401).json({ error: 'please enter a valid username and password' });
+    }
+  } catch (err) {
+    res.status(401).json({ error: 'please enter a valid username and password' });
   }
 });
 
