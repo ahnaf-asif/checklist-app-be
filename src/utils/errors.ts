@@ -10,7 +10,7 @@ export class NoRecordFoundError extends Error {
     this.status = 404;
 
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, NoRecordFoundError);
+      Error.captureStackTrace(this, NoRecordFoundError.constructor);
     }
   }
 }
@@ -27,7 +27,7 @@ export class InvalidFieldError extends Error {
     this.status = 400;
 
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, InvalidFieldError);
+      Error.captureStackTrace(this, InvalidFieldError.constructor);
     }
   }
 }
