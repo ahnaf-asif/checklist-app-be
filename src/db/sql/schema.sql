@@ -1,12 +1,11 @@
---- write the schema related stuff here
 CREATE TABLE users (
-   id SERIAL PRIMARY KEY,
-   username VARCHAR(50) NOT NULL UNIQUE,
-   email VARCHAR(100) NOT NULL UNIQUE,
-   password VARCHAR(255) NOT NULL,
-   name VARCHAR(100) NOT NULL,
-   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE friends(
@@ -14,8 +13,8 @@ CREATE TABLE friends(
     user_id INT NOT NULL,
     friend_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (friend_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE groups (
@@ -24,7 +23,7 @@ CREATE TABLE groups (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator_id INT NOT NULL,
-    FOREIGN KEY (creator_id) REFERENCES users(id),
+    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE SET NULL,
     description TEXT
 );
 
@@ -33,8 +32,8 @@ CREATE TABLE group_members (
     group_id INT NOT NULL,
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (group_id) REFERENCES groups(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE checklist(
@@ -44,7 +43,7 @@ CREATE TABLE checklist(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     creator_id INT NOT NULL,
-    FOREIGN KEY (creator_id) REFERENCES users(id)
+    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE SET NULL
 );
 
 CREATE TABLE checklist_properties(
@@ -54,7 +53,7 @@ CREATE TABLE checklist_properties(
     property_type TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (checklist_id) REFERENCES checklist(id),
+    FOREIGN KEY (checklist_id) REFERENCES checklist(id) ON DELETE CASCADE ON UPDATE CASCADE,
     display_order INT NOT NULL DEFAULT 0
 );
 
@@ -64,8 +63,18 @@ CREATE TABLE user_checklists(
     checklist_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (checklist_id) REFERENCES checklist(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (checklist_id) REFERENCES checklist(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE group_checklist(
+    id SERIAL PRIMARY KEY,
+    group_id INT NOT NULL,
+    checklist_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (checklist_id) REFERENCES checklist(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE categories(
@@ -74,7 +83,7 @@ CREATE TABLE categories(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     parent_id INT DEFAULT NULL,
-    FOREIGN KEY (parent_id) REFERENCES categories(id)
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL ON UPDATE SET NULL
 );
 
 CREATE TABLE items(
@@ -84,9 +93,9 @@ CREATE TABLE items(
     max_steps INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (checklist_id) REFERENCES checklist(id),
+    FOREIGN KEY (checklist_id) REFERENCES checklist(id) ON DELETE CASCADE ON UPDATE CASCADE,
     category_id INT DEFAULT NULL,
-    FOREIGN KEY (category_id) REFERENCES categories(id)
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL ON UPDATE SET NULL
 );
 
 CREATE TABLE item_progress(
@@ -96,8 +105,6 @@ CREATE TABLE item_progress(
     completed_steps INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (item_id) REFERENCES items(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
-
-
