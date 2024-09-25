@@ -1,6 +1,7 @@
 import DbModel from './DbModel';
 import Either from '../../utils/either';
 import { query } from '../db';
+import User from './UserModel';
 
 type ChecklistProps = {
   id: number;
@@ -9,6 +10,12 @@ type ChecklistProps = {
   created_at?: Date;
   updated_at?: Date;
   creator_id: Number;
+};
+
+type ChecklistWithCreatorProp = ChecklistProps & {
+  creator_name?: string;
+  creator_username?: string;
+  used_by: Number;
 };
 
 export default class Checklist extends DbModel implements ChecklistProps {
@@ -39,16 +46,29 @@ export default class Checklist extends DbModel implements ChecklistProps {
     return new Either<User>(new Checklist(checklist as ChecklistProps), err);
   }
 
-  public static async findAll(): Promise<Either<Checklist[]>> {
-    const { val: checklists, err } = await super.findAll();
-    if (err) {
-      return new Either<Checklist[]>(undefined, err);
-    }
-    return new Either<Checklist[]>(
-      // @ts-ignore
-      checklists!.map((checklist) => new Checklist(checklist as ChecklistProps)),
-      err
-    );
+  public static async findAllWithCreatorDetails(
+    user_id: number,
+    searchQuery: string = ''
+  ): Promise<Either<ChecklistWithCreatorProp[]>> {
+    return Either.tryAsync<ChecklistWithCreatorProp[]>(async () => {
+      const result = await query(`
+            SELECT 
+                c.*,
+                COALESCE(u.name, 'deleted') AS creator_name,
+                COALESCE(u.username, 'deleted') AS creator_username,
+                COUNT(uc.user_id)::INT AS used_by,
+                CASE 
+                        WHEN COUNT(CASE WHEN uc.user_id = ${user_id} THEN 1 END) > 0 THEN TRUE 
+                        ELSE FALSE 
+                    END AS enrolled
+            FROM ${this.tableName} AS c
+            LEFT JOIN ${User.tableName} AS u ON c.creator_id = u.id     
+            LEFT JOIN user_checklists AS uc ON c.id = uc.checklist_id
+            GROUP BY c.id, u.name, u.username
+            HAVING c.name ILIKE '%${searchQuery}%';
+        `);
+      return result.rows;
+    });
   }
 
   public static async create(
@@ -131,7 +151,6 @@ export default class Checklist extends DbModel implements ChecklistProps {
         if (key == 'root') continue;
         const cat = categories[key];
         const parent = String(cat.parent_id ?? 'root');
-        console.log(parent, cat.id);
         categories[parent].categories.push(cat);
       }
       for (const item of items_raw) {
