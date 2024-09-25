@@ -73,7 +73,9 @@ CREATE TABLE categories(
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     parent_id INT DEFAULT NULL,
     FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL ON UPDATE SET NULL,
-    display_order INT NOT NULL
+    display_order INT NOT NULL,
+    checklist_id INT NOT NULL,
+    FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE items(

@@ -28,7 +28,18 @@ checklistRouter.get('/:id', async (req, res) => {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
-    res.json(checklist);
+    const showFull = req.query.full;
+    console.log(showFull);
+    if (showFull !== '1') {
+      return res.json(checklist);
+    }
+    const { val: checklistFull, err } = await checklist!.get_full();
+    if (err) {
+      const status = getHttpStatusCode(err);
+      res.status(status).json({ error: err.message });
+    } else {
+      res.json(checklistFull);
+    }
   }
 });
 
