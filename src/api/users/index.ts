@@ -101,11 +101,17 @@ userRouter.post('/signin', async (req, res) => {
   }
 });
 
-userRouter.put('/:id', async (req, res) => {
+userRouter.put('/:id', authMiddleware, async (req, res) => {
   const id = Number(req.params.id);
+  const authUser = (req as any).authUser;
 
   if (isNaN(id)) {
     res.status(400).json({ error: `Invalid ID ${req.params.id}` });
+    return;
+  }
+
+  if (id !== authUser.id) {
+    res.status(403).json({ error: `You are not authorized to update this user` });
     return;
   }
 
@@ -116,16 +122,47 @@ userRouter.put('/:id', async (req, res) => {
       });
       return;
     }
-    //omit the id field
     delete req.body.id;
   }
 
+  const { val: userData, err: errData } = await User.find(id);
+
+  if (errData) {
+    const status = getHttpStatusCode(errData);
+    res.status(status).json({ error: errData?.message });
+    return;
+  }
+
+  const currentUser = userData as User;
+
+  if (!(await argon2.verify(currentUser.password, req.body?.password as string))) {
+    res.status(403).json({ error: 'password is incorrect' });
+    return;
+  }
+
+  req.body.password = await argon2.hash(req.body.password);
+
   const { val: user, err } = await User.update(id, req.body);
+
+  const updatedUser = user as User;
+
   if (err) {
     const status = getHttpStatusCode(err);
-    res.status(status).json({ error: err.message });
+    res.status(status).json({ error: err?.message });
   } else {
-    res.json(user);
+    const token = jwt.sign(
+      {
+        id: updatedUser.id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        name: updatedUser.name
+      },
+      process.env.JWT_SECRET as string,
+      {
+        expiresIn: '1h'
+      }
+    );
+    res.status(200).json({ token });
   }
 });
 
