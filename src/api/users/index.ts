@@ -142,7 +142,7 @@ userRouter.delete('/:id', async (req, res) => {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
-    res.json({ error: `User with ID '${id}' deleted if it existed` });
+    res.status(200).json({ message: `User with ID '${id}' deleted if it existed` });
   }
 });
 
