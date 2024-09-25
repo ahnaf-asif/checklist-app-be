@@ -42,19 +42,8 @@ CREATE TABLE checklists(
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    creator_id INT NOT NULL,
-    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE SET NULL
-);
-
-CREATE TABLE checklist_properties(
-    id SERIAL PRIMARY KEY,
-    checklist_id INT NOT NULL,
-    property_name VARCHAR(50) NOT NULL,
-    property_type TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    display_order INT NOT NULL DEFAULT 0
+    creator_id INT,
+    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 CREATE TABLE user_checklists(
@@ -83,7 +72,8 @@ CREATE TABLE categories(
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     parent_id INT DEFAULT NULL,
-    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL ON UPDATE SET NULL
+    FOREIGN KEY (parent_id) REFERENCES categories(id) ON DELETE SET NULL ON UPDATE SET NULL,
+    display_order INT NOT NULL
 );
 
 CREATE TABLE items(
@@ -95,7 +85,8 @@ CREATE TABLE items(
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (checklist_id) REFERENCES checklists(id) ON DELETE CASCADE ON UPDATE CASCADE,
     category_id INT DEFAULT NULL,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL ON UPDATE SET NULL
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL ON UPDATE SET NULL,
+    display_order INT NOT NULL 
 );
 
 CREATE TABLE item_progress(
