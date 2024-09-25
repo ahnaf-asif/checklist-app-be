@@ -88,23 +88,23 @@ INSERT INTO user_checklists (user_id, checklist_id) VALUES
     (16, 4), (17, 4), (18, 4), (19, 4), (20, 4),
     (21, 5), (22, 5), (23, 5), (24, 5), (25, 5);
 
-INSERT INTO categories (name, parent_id, display_order) VALUES
-     ('Work', NULL, 1),
-     ('Home', NULL, 2),
-     ('Personal', NULL, 3),
-     ('Subcategory A', 1, 1),
-     ('Subcategory B', 1, 2),
-     ('Complexity', NULL, 1),
-     ('Sorting', NULL, 2),
-     ('n^2 algorithms', 8, 1),
-     ('nlogn algorithms', 8, 2),
-     ('Searching', NULL, 3),
-     ('Graph', NULL, 4),
-     ('Travarsal', 11, 1),
-     ('Weighted shortest path', 11, 2),
-     ('Single source', 13, 1),
-     ('Multiple source', 13, 2),
-     ('Minimum spanning tree', 11, 1);
+INSERT INTO categories (checklist_id, name, parent_id, display_order) VALUES
+     (1, 'Work', NULL, 1),
+     (1, 'Home', NULL, 2),
+     (1, 'Personal', NULL, 3),
+     (1, 'Subcategory A', 1, 1),
+     (1, 'Subcategory B', 1, 2),
+     (6, 'Complexity', NULL, 1),
+     (6, 'Sorting', NULL, 2),
+     (6, 'n^2 algorithms', 7, 1),
+     (6, 'nlogn algorithms', 7, 2),
+     (6, 'Searching', NULL, 3),
+     (6, 'Graph', NULL, 4),
+     (6, 'Travarsal', 11, 1),
+     (6, 'Weighted shortest path', 11, 2),
+     (6, 'Single source', 13, 1),
+     (6, 'Multiple source', 13, 2),
+     (6, 'Minimum spanning tree', 11, 1);
 
 INSERT INTO items (checklist_id, name, max_steps, category_id, display_order) VALUES
     (1, 'Item 1 for Checklist A', 3, 1, 1),
