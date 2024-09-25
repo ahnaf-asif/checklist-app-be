@@ -7,8 +7,10 @@ import { getHttpStatusCode } from '../../utils/statusCode';
 import { authMiddleware } from '../middlewares';
 
 const userRouter = Router();
-userRouter.get('/', authMiddleware, async (_req, res) => {
-  const { val: users, err } = await User.findAll();
+userRouter.get('/', authMiddleware, async (req, res) => {
+  const authUser = (req as any).authUser;
+
+  const { val: users, err } = await User.findAllUsers(authUser.id);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
@@ -17,7 +19,7 @@ userRouter.get('/', authMiddleware, async (_req, res) => {
   }
 });
 
-userRouter.get('/:id', async (req, res) => {
+userRouter.get('/:id', authMiddleware, async (req, res) => {
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
@@ -217,11 +219,18 @@ userRouter.put('/:id/password', authMiddleware, async (req, res) => {
   }
 });
 
-userRouter.delete('/:id', async (req, res) => {
+userRouter.delete('/:id', authMiddleware, async (req, res) => {
   const id = Number(req.params.id);
 
   if (isNaN(id)) {
     res.status(400).json({ error: `Invalid ID ${req.params.id}` });
+    return;
+  }
+
+  const authUser = (req as any).authUser;
+
+  if (id !== authUser.id) {
+    res.status(403).json({ error: `You are not authorized to delete this user` });
     return;
   }
 
@@ -231,6 +240,106 @@ userRouter.delete('/:id', async (req, res) => {
     res.status(status).json({ error: err.message });
   } else {
     res.status(200).json({ message: `User with ID '${id}' deleted if it existed` });
+  }
+});
+
+userRouter.get('/:id/friends', authMiddleware, async (req, res) => {
+  const id = Number(req.params.id);
+
+  if (isNaN(id)) {
+    res.status(400).json({ error: `Invalid ID ${req.params.id}` });
+    return;
+  }
+
+  const { val: user, err } = await User.find(id);
+  if (err || !user) {
+    const status = getHttpStatusCode(err);
+    res.status(status).json({ error: err ? err.message : 'User not found' });
+    return;
+  }
+
+  const { val: friends, err: errFriends } = await user.findFriends();
+  if (errFriends) {
+    const status = getHttpStatusCode(errFriends);
+    res.status(status).json({ error: errFriends.message });
+  } else {
+    res.json(friends);
+  }
+});
+
+userRouter.post('/:user_id/friends/:friend_id', authMiddleware, async (req, res) => {
+  const user_id = Number(req.params.user_id);
+  const friend_id = Number(req.params.friend_id);
+  const authUser = (req as any).authUser;
+
+  if (isNaN(user_id) || isNaN(friend_id)) {
+    res.status(400).json({ error: `Invalid ID ${req.params.user_id} or ${req.params.friend_id}` });
+    return;
+  }
+
+  if (user_id !== authUser.id) {
+    res.status(403).json({ error: `You are not authorized to add a friend to this user` });
+    return;
+  }
+
+  const { val: user, err } = await User.find(user_id);
+  if (err || !user) {
+    const status = getHttpStatusCode(err);
+    res.status(status).json({ error: err ? err.message : 'User not found' });
+    return;
+  }
+
+  const { val: friend, err: errFriend } = await User.find(friend_id);
+  if (errFriend || !friend) {
+    const status = getHttpStatusCode(errFriend);
+    res.status(status).json({ error: errFriend ? errFriend.message : 'Friend not found' });
+    return;
+  }
+
+  const { err: errAddFriend } = await user.addFriend(friend.id);
+  if (errAddFriend) {
+    const status = getHttpStatusCode(errAddFriend);
+    res.status(status).json({ error: errAddFriend.message });
+  } else {
+    res.status(201).json({ message: `Successfully added ${friend.username} as a friend.` });
+  }
+});
+
+userRouter.delete('/:user_id/friends/:friend_id', authMiddleware, async (req, res) => {
+  const user_id = Number(req.params.user_id);
+  const friend_id = Number(req.params.friend_id);
+  const authUser = (req as any).authUser;
+
+  if (isNaN(user_id) || isNaN(friend_id)) {
+    res.status(400).json({ error: `Invalid ID ${req.params.user_id} or ${req.params.friend_id}` });
+    return;
+  }
+
+  if (user_id !== authUser.id) {
+    res.status(403).json({ error: `You are not authorized to delete a friend from this user` });
+    return;
+  }
+
+  const { val: user, err } = await User.find(user_id);
+  if (err || !user) {
+    const status = getHttpStatusCode(err);
+    res.status(status).json({ error: err ? err.message : 'User not found' });
+    return;
+  }
+
+  const { val: friend, err: errFriend } = await User.find(friend_id);
+  if (errFriend || !friend) {
+    const status = getHttpStatusCode(errFriend);
+    res.status(status).json({ error: errFriend ? errFriend.message : 'Friend not found' });
+    return;
+  }
+
+  const { err: errDeleteFriend } = await user.unFriend(friend.id);
+  if (errDeleteFriend) {
+    const status = getHttpStatusCode(errDeleteFriend);
+    res.status(status).json({ error: errDeleteFriend.message });
+  } else {
+    res.status(200).json({ message: `Successfully deleted ${friend.username} from friends.` });
   }
 });
 
