@@ -2,11 +2,15 @@ import { Router } from 'express';
 
 import Checklist from '../../db/models/ChecklistModel';
 import { getHttpStatusCode } from '../../utils/statusCode';
+import { authMiddleware } from '../middlewares';
 
 const checklistRouter = Router();
+checklistRouter.use(authMiddleware);
 
-checklistRouter.get('/', async (_req, res) => {
-  const { val: checklist, err } = await Checklist.findAll();
+checklistRouter.get('/', async (req, res) => {
+  const user = (req as any).authUser;
+  const searchQuery = req.query.searchQuery as string;
+  const { val: checklist, err } = await Checklist.findAllWithCreatorDetails(user.id, searchQuery);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
@@ -29,7 +33,6 @@ checklistRouter.get('/:id', async (req, res) => {
     res.status(status).json({ error: err.message });
   } else {
     const showFull = req.query.full;
-    console.log(showFull);
     if (showFull !== '1') {
       return res.json(checklist);
     }
