@@ -73,24 +73,14 @@ INSERT INTO group_members (group_id, user_id) VALUES
     (4, 16), (4, 17), (4, 18), (4, 19), (4, 20),
     (5, 21), (5, 22), (5, 23), (5, 24), (5, 25);
 
-INSERT INTO checklist (name, description, creator_id) VALUES
+INSERT INTO checklists (name, description, creator_id) VALUES
     ('Checklist A', 'Description for Checklist A', 1),
     ('Checklist B', 'Description for Checklist B', 2),
     ('Checklist C', 'Description for Checklist C', 3),
     ('Checklist D', 'Description for Checklist D', 4),
-    ('Checklist E', 'Description for Checklist E', 5);
-
-INSERT INTO checklist_properties (checklist_id, property_name, property_type, display_order) VALUES
-    (1, 'Due Date', 'DATE', 1),
-    (1, 'Priority', 'TEXT', 2),
-    (2, 'Status', 'TEXT', 1),
-    (2, 'Assigned To', 'TEXT', 2),
-    (3, 'Category', 'TEXT', 1),
-    (3, 'Due Date', 'DATE', 2),
-    (4, 'Tags', 'TEXT', 1),
-    (4, 'Completion', 'NUMBER', 2),
-    (5, 'Description', 'TEXT', 1);
-
+    ('Checklist E', 'Description for Checklist E', 5),
+    ('Algorithms', 'A roadmap for basic algorithms. Progress guide: 0 - not started, 1 - learning, 2 - Completed', 1);
+    
 INSERT INTO user_checklists (user_id, checklist_id) VALUES
     (1, 1), (2, 1), (3, 1), (4, 1), (5, 1),
     (6, 2), (7, 2), (8, 2), (9, 2), (10, 2),
@@ -98,24 +88,53 @@ INSERT INTO user_checklists (user_id, checklist_id) VALUES
     (16, 4), (17, 4), (18, 4), (19, 4), (20, 4),
     (21, 5), (22, 5), (23, 5), (24, 5), (25, 5);
 
-INSERT INTO categories (name, parent_id) VALUES
-     ('Work', NULL),
-     ('Home', NULL),
-     ('Personal', NULL),
-     ('Subcategory A', 1),
-     ('Subcategory B', 2);
+INSERT INTO categories (name, parent_id, display_order) VALUES
+     ('Work', NULL, 1),
+     ('Home', NULL, 2),
+     ('Personal', NULL, 3),
+     ('Subcategory A', 1, 1),
+     ('Subcategory B', 1, 2),
+     ('Complexity', NULL, 1),
+     ('Sorting', NULL, 2),
+     ('n^2 algorithms', 8, 1),
+     ('nlogn algorithms', 8, 2),
+     ('Searching', NULL, 3),
+     ('Graph', NULL, 4),
+     ('Travarsal', 11, 1),
+     ('Weighted shortest path', 11, 2),
+     ('Single source', 13, 1),
+     ('Multiple source', 13, 2),
+     ('Minimum spanning tree', 11, 1);
 
-INSERT INTO items (checklist_id, name, max_steps, category_id) VALUES
-    (1, 'Item 1 for Checklist A', 3, 1),
-    (1, 'Item 2 for Checklist A', 4, 1),
-    (2, 'Item 1 for Checklist B', 5, 2),
-    (2, 'Item 2 for Checklist B', 6, 2),
-    (3, 'Item 1 for Checklist C', 7, 3),
-    (3, 'Item 2 for Checklist C', 8, 3),
-    (4, 'Item 1 for Checklist D', 9, 4),
-    (4, 'Item 2 for Checklist D', 10, 4),
-    (5, 'Item 1 for Checklist E', 11, 5),
-    (5, 'Item 2 for Checklist E', 12, 5);
+INSERT INTO items (checklist_id, name, max_steps, category_id, display_order) VALUES
+    (1, 'Item 1 for Checklist A', 3, 1, 1),
+    (1, 'Item 2 for Checklist A', 4, 1, 1),
+    (2, 'Item 1 for Checklist B', 5, 2, 1),
+    (2, 'Item 2 for Checklist B', 6, 2, 1),
+    (3, 'Item 1 for Checklist C', 7, 3, 1),
+    (3, 'Item 2 for Checklist C', 8, 3, 1),
+    (4, 'Item 1 for Checklist D', 9, 4, 1),
+    (4, 'Item 2 for Checklist D', 10, 4, 1),
+    (5, 'Item 1 for Checklist E', 11, 5, 1),
+    (5, 'Item 2 for Checklist E', 12, 5, 1),
+    (6, 'Time complexity', 3, 6, 1),
+    (6, 'Space complexity', 3, 6, 2),
+    (6, 'Bubble sort', 3, 8, 1),
+    (6, 'Insertion sort', 3, 8, 2),
+    (6, 'Bubble sort', 3, 8, 3),
+    (6, 'Merge sort', 3, 9, 1),
+    (6, 'Quick sort', 3, 9, 2),
+    (6, 'Linear search', 3, 10, 1),
+    (6, 'Binary search', 3, 10, 2),
+    (6, 'Directed Graph', 3, 11, 1),
+    (6, 'Undirected Graph', 3, 11, 2),
+    (6, 'BFS', 3, 12, 1),
+    (6, 'DFS', 3, 12, 2),
+    (6, 'Dijkstra', 3, 14, 1),
+    (6, 'Bellman-Ford', 3, 14, 2),
+    (6, 'Floyd-Warshall', 3, 15, 1),
+    (6, 'Prims', 3, 16, 1),
+    (6, 'Kruskals', 3, 16, 1);
 
 INSERT INTO item_progress (item_id, user_id, completed_steps) VALUES
     (1, 1, 2), (2, 1, 1), (3, 6, 5), (4, 6, 4), (5, 11, 7),
