@@ -63,7 +63,7 @@ export default class User extends DbModel implements UserProps {
 
   public static async update(
     id: number,
-    props: Partial<Omit<UserProps, 'id'>>
+    props: Partial<Omit<UserProps, 'id' | 'username'>>
   ): Promise<Either<User>> {
     const { val: user, err } = await super.update(id, props);
     if (err) {
