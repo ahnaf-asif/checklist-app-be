@@ -73,7 +73,7 @@ INSERT INTO group_members (group_id, user_id) VALUES
     (4, 16), (4, 17), (4, 18), (4, 19), (4, 20),
     (5, 21), (5, 22), (5, 23), (5, 24), (5, 25);
 
-INSERT INTO checklist (name, description, creator_id) VALUES
+INSERT INTO checklists (name, description, creator_id) VALUES
     ('Checklist A', 'Description for Checklist A', 1),
     ('Checklist B', 'Description for Checklist B', 2),
     ('Checklist C', 'Description for Checklist C', 3),
