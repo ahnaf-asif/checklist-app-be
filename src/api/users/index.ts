@@ -4,9 +4,10 @@ import * as jwt from 'jsonwebtoken';
 
 import User from '../../db/models/UserModel';
 import { getHttpStatusCode } from '../../utils/statusCode';
+import { authMiddleware } from '../middlewares';
 
 const userRouter = Router();
-userRouter.get('/', async (_req, res) => {
+userRouter.get('/', authMiddleware, async (_req, res) => {
   const { val: users, err } = await User.findAll();
   if (err) {
     const status = getHttpStatusCode(err);
@@ -37,8 +38,7 @@ userRouter.post('/signup', async (req, res) => {
   req.body.password = await argon2.hash(req.body.password);
   const { val: user, err } = await User.create(req.body);
   if (err) {
-    const status = getHttpStatusCode(err);
-    res.status(status).json({ error: err.message });
+    res.status(403).json({ error: err.message });
   } else if (user === undefined) {
     res.status(500).json({ error: 'Internal Server Error' });
     return;
@@ -71,7 +71,7 @@ userRouter.post('/signin', async (req, res) => {
   }
 
   if (users === undefined) {
-    res.status(401).json({ error: 'please enter a valid username and password' });
+    res.status(403).json({ error: 'please enter a valid username and password' });
     return;
   }
 
@@ -94,10 +94,10 @@ userRouter.post('/signin', async (req, res) => {
 
       res.status(200).json({ token });
     } else {
-      res.status(401).json({ error: 'please enter a valid username and password' });
+      res.status(403).json({ error: 'please enter a valid username and password' });
     }
   } catch (err) {
-    res.status(401).json({ error: 'please enter a valid username and password' });
+    res.status(403).json({ error: 'please enter a valid username and password' });
   }
 });
 
