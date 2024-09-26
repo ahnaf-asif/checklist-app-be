@@ -182,4 +182,13 @@ export default class Checklist extends DbModel implements ChecklistProps {
       return categories['root'];
     });
   }
+
+  public static async enroll(user_id: number, checklist_id: number) {
+    return Either.tryAsync(async () => {
+      const results = await query(`
+                INSERT INTO user_checklists (user_id, checklist_id) VALUES (${user_id}, ${checklist_id}) RETURNING *; 
+      `);
+      return results.rows[0];
+    });
+  }
 }
