@@ -38,18 +38,12 @@ checklistRouter.get('/:id', async (req, res) => {
     return;
   }
 
-  const { val: checklist, err } = await Checklist.find(id);
+  const { val: items, err } = await Checklist.get_items(id, user.id);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
-    const { val: items, err } = await checklist!.get_items(user.id);
-    if (err) {
-      const status = getHttpStatusCode(err);
-      res.status(status).json({ error: err.message });
-    } else {
-      res.json(items);
-    }
+    res.json(items);
   }
 });
 

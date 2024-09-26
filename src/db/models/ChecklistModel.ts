@@ -112,7 +112,10 @@ export default class Checklist extends DbModel implements ChecklistProps {
     return super.update(props as Record<string, any>) as Promise<Checklist>;
   }
 
-  public async get_items(user_id: number): Promise<Either<[Record<string, any>]>> {
+  public static async get_items(
+    id: number,
+    user_id: number
+  ): Promise<Either<[Record<string, any>]>> {
     return Either.tryAsync<[Record<string, any>]>(async () => {
       const result = await query(`
         SELECT item.*, 
@@ -123,7 +126,7 @@ export default class Checklist extends DbModel implements ChecklistProps {
         FROM ${Checklist.itemsTableName} item
         LEFT JOIN ${Checklist.categoriesTableName} category ON item.category_id = category.id
         LEFT JOIN item_progress ip ON item.id = ip.item_id
-        WHERE item.checklist_id = ${this.id} AND ip.user_id = ${user_id};
+        WHERE item.checklist_id = ${id} AND ip.user_id = ${user_id};
       `);
       return result.rows as [Record<string, any>];
     });
