@@ -57,6 +57,11 @@ checklistRouter.post('/', async (req, res) => {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
+    const { err: enrollErr} = await Checklist.enroll(user.id, checklist!.id);
+    if(enrollErr){
+        const status = getHttpStatusCode(enrollErr);
+        res.status(status).json({error: enrollErr.message});
+    }
     res.json(checklist);
   }
 });
