@@ -3,6 +3,7 @@ import { Router } from 'express';
 import Checklist from '../../db/models/ChecklistModel';
 import { getHttpStatusCode } from '../../utils/statusCode';
 import { authMiddleware } from '../middlewares';
+import { query } from '../../db';
 
 const checklistRouter = Router();
 checklistRouter.use(authMiddleware);
@@ -30,6 +31,26 @@ checklistRouter.get('/created_checklists', async (req, res) => {
   }
 });
 
+checklistRouter.get('/individual/:id', async (req, res) => {
+  const id = Number(req.params.id);
+  const user = (req as any).authUser;
+  if (isNaN(id)) {
+    res.status(400).json({ error: `Invalid ID ${req.params.id}` });
+    return;
+  }
+  const { val: checklist, err: newErr } = await Checklist.findAllWithCreatorDetails(user.id, '');
+  // checklist has list of checklists, find the one with the id
+  const individualChecklist = (checklist as any[]).find((c) => c.id === id);
+
+  const { val: items, err } = await Checklist.get_items(id, user.id);
+  const categories = (await query(`SELECT * FROM categories where checklist_id = ${id}`)).rows;
+  if (err) {
+    const status = getHttpStatusCode(err);
+    res.status(status).json({ error: err.message });
+  } else {
+    res.json({ ...individualChecklist, items, categories });
+  }
+});
 checklistRouter.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const user = (req as any).authUser;
@@ -39,6 +60,7 @@ checklistRouter.get('/:id', async (req, res) => {
   }
 
   const { val: items, err } = await Checklist.get_items(id, user.id);
+  console.log('items: ', items);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });

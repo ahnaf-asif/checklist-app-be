@@ -117,17 +117,23 @@ export default class Checklist extends DbModel implements ChecklistProps {
     user_id: number
   ): Promise<Either<[Record<string, any>]>> {
     return Either.tryAsync<[Record<string, any>]>(async () => {
-      const result = await query(`
-        SELECT item.*, 
-            category.name AS category_name, 
-            category.parent_id, 
-            category.display_order AS category_display_order,
-            ip.completed_steps as completed_steps
-        FROM ${Checklist.itemsTableName} item
-        LEFT JOIN ${Checklist.categoriesTableName} category ON item.category_id = category.id
-        LEFT JOIN item_progress ip ON item.id = ip.item_id
-        WHERE item.checklist_id = ${id} AND ip.user_id = ${user_id};
-      `);
+      const result = await query(
+        `
+            SELECT item.*,
+                   category.name AS category_name,
+                   category.parent_id,
+                   category.display_order AS category_display_order,
+                   COALESCE(MAX(ip.completed_steps), 0) AS completed_steps
+            FROM ${Checklist.itemsTableName} item
+                     LEFT JOIN ${Checklist.categoriesTableName} category
+                               ON item.category_id = category.id
+                     LEFT JOIN item_progress ip
+                               ON item.id = ip.item_id AND ip.user_id = $1
+            WHERE item.checklist_id = $2
+            GROUP BY item.id, category.name, category.parent_id, category.display_order;
+        `,
+        [user_id, id]
+      );
       return result.rows as [Record<string, any>];
     });
   }

@@ -11,6 +11,7 @@ type ItemProps = {
   created_at?: Date;
   updated_at?: Date;
   category_id?: number;
+  display_order?: number;
 };
 
 export default class Item extends DbModel implements ItemProps {
@@ -22,7 +23,8 @@ export default class Item extends DbModel implements ItemProps {
     'max_steps',
     'created_at',
     'updated_at',
-    'category_id'
+    'category_id',
+    'display_order'
   ];
 
   public id!: number;
@@ -62,12 +64,13 @@ export default class Item extends DbModel implements ItemProps {
   public static async create(
     props: Omit<ItemProps, 'id'> & { id?: number }
   ): Promise<Either<Item>> {
-    const { val: user, err } = await super.create(props);
+    const { val: item, err } = await super.create(props);
+    console.log(item);
     if (err) {
       return new Either<Item>(undefined, err);
     }
     // @ts-ignore
-    return new Either<Item>(new Item(user as ItemProps), err);
+    return new Either<Item>(new Item(item as ItemProps), err);
   }
 
   public static async update(

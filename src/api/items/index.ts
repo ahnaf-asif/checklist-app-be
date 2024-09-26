@@ -3,6 +3,7 @@ import { Router } from 'express';
 import Item from '../../db/models/ItemModel';
 import { getHttpStatusCode } from '../../utils/statusCode';
 import { authMiddleware } from '../middlewares';
+import { query } from '../../db';
 
 const itemRouter = Router();
 itemRouter.use(authMiddleware);
@@ -35,6 +36,8 @@ itemRouter.get('/:id', async (req, res) => {
 });
 
 itemRouter.post('/', async (req, res) => {
+  req.body.category_id = Number(req.body.category_id);
+
   const { val: item, err } = await Item.create(req.body);
   if (err) {
     const status = getHttpStatusCode(err);
@@ -124,6 +127,33 @@ itemRouter.put('/decrease', async (req, res) => {
     } else {
       res.status(200);
     }
+  }
+});
+
+itemRouter.put('/change_progress/:user_id/item/:item_id', async (req: any, res: any) => {
+  const user_id = Number(req.params?.user_id);
+  const item_id = Number(req.params?.item_id);
+  const completed_steps = Number(req.body.completed_steps);
+  console.log(user_id, item_id, completed_steps);
+
+  try {
+    const resp1 = await query<any>(
+      `SELECT * FROM item_progress WHERE user_id = ${user_id} AND item_id = ${item_id}`
+    );
+    if (resp1.rows.length == 0) {
+      const resp2 = await query<any>(
+        `INSERT INTO item_progress (user_id, item_id, completed_steps) VALUES (${user_id}, ${item_id}, ${completed_steps})`
+      );
+      res.status(200).json(resp2.rows);
+      return;
+    }
+    const resp = await query<any>(
+      `UPDATE item_progress SET completed_steps = ${completed_steps} WHERE user_id = ${user_id} AND item_id = ${item_id}`
+    );
+    console.log(resp.rows);
+    res.status(200).json(resp.rows);
+  } catch (e) {
+    res.status(403).json({ error: 'error happened' });
   }
 });
 

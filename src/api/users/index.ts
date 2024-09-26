@@ -54,7 +54,7 @@ userRouter.post('/signup', async (req, res) => {
       },
       process.env.JWT_SECRET as string,
       {
-        expiresIn: '1h'
+        expiresIn: '24h'
       }
     );
 
@@ -90,7 +90,7 @@ userRouter.post('/signin', async (req, res) => {
         },
         process.env.JWT_SECRET as string,
         {
-          expiresIn: '1h'
+          expiresIn: '24h'
         }
       );
 
@@ -161,7 +161,7 @@ userRouter.put('/:id', authMiddleware, async (req, res) => {
       },
       process.env.JWT_SECRET as string,
       {
-        expiresIn: '1h'
+        expiresIn: '24h'
       }
     );
     res.status(200).json({ token });
