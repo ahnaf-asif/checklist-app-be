@@ -191,14 +191,26 @@ export default class Checklist extends DbModel implements ChecklistProps {
       return results.rows[0];
     });
   }
-  
-    
+
   public static async leave(user_id: number, checklist_id: number) {
     return Either.tryAsync(async () => {
       const results = await query(`
                 DELETE FROM user_checklists WHERE user_id = ${user_id} AND checklist_id = ${checklist_id}) ; 
       `);
       return results.rows[0];
+    });
+  }
+
+  public static async created_checklists(user_id: number) {
+    return Either.tryAsync(async () => {
+      const results = await query(`
+                SELECT c.*, COUNT(uc.*)
+                FROM ${this.tableName} AS c 
+                LEFT JOIN user_checklists as uc ON uc.checklist_id = c.id
+                GROUP BY c.id
+                HAVING c.creator_id = ${user_id}
+      `);
+      return results.rows;
     });
   }
 }

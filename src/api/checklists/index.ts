@@ -19,6 +19,17 @@ checklistRouter.get('/', async (req, res) => {
   }
 });
 
+checklistRouter.get('/created_checklists', async (req, res) => {
+  const user = (req as any).authUser;
+  const { val: checklists, err } = await Checklist.created_checklists(user.id);
+  if (err) {
+    const status = getHttpStatusCode(err);
+    res.status(status).json({ error: err.message });
+  } else {
+    res.json(checklists);
+  }
+});
+
 checklistRouter.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const user = (req as any).authUser;
@@ -57,19 +68,19 @@ checklistRouter.post('/', async (req, res) => {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
-    const { err: enrollErr} = await Checklist.enroll(user.id, checklist!.id);
-    if(enrollErr){
-        const status = getHttpStatusCode(enrollErr);
-        res.status(status).json({error: enrollErr.message});
+    const { err: enrollErr } = await Checklist.enroll(user.id, checklist!.id);
+    if (enrollErr) {
+      const status = getHttpStatusCode(enrollErr);
+      res.status(status).json({ error: enrollErr.message });
     }
     res.json(checklist);
   }
 });
 
 checklistRouter.post('/enroll', async (req, res) => {
-  const user = (req as any).authUser; 
-  const user_id  = req.body.user_id;
-  if(user.id !== user_id){
+  const user = (req as any).authUser;
+  const user_id = req.body.user_id;
+  if (user.id !== user_id) {
     return res.status(401);
   }
   const checklist_id = req.body.checklist_id;
@@ -85,9 +96,9 @@ checklistRouter.post('/enroll', async (req, res) => {
 });
 
 checklistRouter.delete('/leave', async (req, res) => {
-  const user = (req as any).authUser; 
-  const user_id  = req.body.user_id;
-  if(user.id !== user_id){
+  const user = (req as any).authUser;
+  const user_id = req.body.user_id;
+  if (user.id !== user_id) {
     return res.status(401);
   }
   const checklist_id = req.body.checklist_id;
@@ -96,9 +107,7 @@ checklistRouter.delete('/leave', async (req, res) => {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
-    res
-      .status(200)
-      .json({ message: `${user_id} succesfully left in checklist: ${checklist_id}` });
+    res.status(200).json({ message: `${user_id} succesfully left in checklist: ${checklist_id}` });
   }
 });
 
