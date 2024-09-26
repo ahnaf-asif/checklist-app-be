@@ -38,21 +38,17 @@ checklistRouter.get('/:id', async (req, res) => {
     return;
   }
 
-  const { val: checklist, err } = await Checklist.findWithCreatorDetails(id, user.id);
+  const { val: checklist, err } = await Checklist.find(id);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
   } else {
-    const showFull = req.query.full;
-    if (showFull !== '1') {
-      return res.json(checklist);
-    }
-    const { val: checklistFull, err } = await checklist!.get_full(user.id);
+    const { val: items, err } = await checklist!.get_items(user.id);
     if (err) {
       const status = getHttpStatusCode(err);
-      return res.status(status).json({ error: err.message });
+      res.status(status).json({ error: err.message });
     } else {
-      return res.json(checklistFull);
+      res.json(items);
     }
   }
 });
