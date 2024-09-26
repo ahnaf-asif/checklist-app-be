@@ -1,8 +1,8 @@
-import { Router } from "express";
+import { Router } from 'express';
 
-import Item from "../../db/models/ItemModel";
-import { getHttpStatusCode } from "../../utils/statusCode";
-import { authMiddleware } from "../middlewares";
+import Item from '../../db/models/ItemModel';
+import { getHttpStatusCode } from '../../utils/statusCode';
+import { authMiddleware } from '../middlewares';
 
 const itemRouter = Router();
 itemRouter.use(authMiddleware);
@@ -35,7 +35,6 @@ itemRouter.get('/:id', async (req, res) => {
 });
 
 itemRouter.post('/', async (req, res) => {
-
   const { val: item, err } = await Item.create(req.body);
   if (err) {
     const status = getHttpStatusCode(err);
@@ -87,6 +86,44 @@ itemRouter.delete('/:id', async (req, res) => {
     res.status(status).json({ error: err.message });
   } else {
     res.status(200).json({ message: `item with ID '${id}' deleted` });
+  }
+});
+
+itemRouter.put('/increase', async (req, res) => {
+  const user = (req as any).authUser;
+  const item_id = req.body.item_id;
+
+  const { val: item, err: ierr } = await Item.find(item_id);
+  if (ierr) {
+    const status = getHttpStatusCode(ierr);
+    res.status(status).json({ error: ierr.message });
+  } else {
+    const { err } = await item!.increase(user.id);
+    if (err) {
+      const status = getHttpStatusCode(err);
+      res.status(status).json({ error: err.message });
+    } else {
+      res.status(200);
+    }
+  }
+});
+
+itemRouter.put('/decrease', async (req, res) => {
+  const user = (req as any).authUser;
+  const item_id = req.body.item_id;
+
+  const { val: item, err: ierr } = await Item.find(item_id);
+  if (ierr) {
+    const status = getHttpStatusCode(ierr);
+    res.status(status).json({ error: ierr.message });
+  } else {
+    const { err } = await item!.decrease(user.id);
+    if (err) {
+      const status = getHttpStatusCode(err);
+      res.status(status).json({ error: err.message });
+    } else {
+      res.status(200);
+    }
   }
 });
 
