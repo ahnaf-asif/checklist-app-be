@@ -173,4 +173,12 @@ export default class Checklist extends DbModel implements ChecklistProps {
       return results.rows;
     });
   }
+
+  public static async create_categories(categories: any, checklist_id: number) {
+    for (const cat of categories) {
+      const q = `INSERT INTO categories (name, display_order, checklist_id) VALUES ('${cat}', 0, ${checklist_id})`;
+      console.log(q);
+      await query(q);
+    }
+  }
 }

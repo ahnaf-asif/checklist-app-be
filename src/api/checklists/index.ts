@@ -50,10 +50,16 @@ checklistRouter.get('/:id', async (req, res) => {
 checklistRouter.post('/', async (req, res) => {
   const user = (req as any).authUser;
   const creator_id = req.body.creator_id;
+  const categories = req.body.categories;
+  const body = {
+    name: req.body.name,
+    description: req.body.description,
+    creator_id: req.body.creator_id
+  };
   if (user.id !== creator_id) {
     return res.status(409).json({ error: "Can't create checklist for other users" });
   }
-  const { val: checklist, err } = await Checklist.create(req.body);
+  const { val: checklist, err } = await Checklist.create(body);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
@@ -63,6 +69,7 @@ checklistRouter.post('/', async (req, res) => {
       const status = getHttpStatusCode(enrollErr);
       res.status(status).json({ error: enrollErr.message });
     }
+    await Checklist.create_categories(categories, checklist!.id);
     res.json(checklist);
   }
 });
