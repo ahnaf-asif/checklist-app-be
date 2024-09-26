@@ -12,12 +12,6 @@ type ChecklistProps = {
   creator_id: Number;
 };
 
-type ChecklistWithCreatorProp = ChecklistProps & {
-  creator_name?: string;
-  creator_username?: string;
-  used_by: Number;
-};
-
 export default class Checklist extends DbModel implements ChecklistProps {
   public static tableName = 'checklists';
   public static primaryKey = 'id';
@@ -31,26 +25,46 @@ export default class Checklist extends DbModel implements ChecklistProps {
   public created_at!: Date;
   public updated_at?: Date;
   public creator_id!: Number;
+  public creator_name?: string;
+  public creator_username?: string;
+  public used_by?: Number;
+  public enrolled?: boolean;
 
   constructor(props: ChecklistProps) {
     super(props);
     Object.assign(this, props);
   }
 
-  public static async find(id: number): Promise<Either<Checklist>> {
-    const { val: checklist, err } = await super.find(id);
-    if (err) {
-      return new Either<Checklist>(undefined, err);
-    }
-    // @ts-ignore
-    return new Either<User>(new Checklist(checklist as ChecklistProps), err);
+  public static async findWithCreatorDetails(
+    id: number,
+    user_id: number
+  ): Promise<Either<Checklist>> {
+    return Either.tryAsync<Checklist>(async () => {
+      const result = await query(`
+            SELECT 
+                c.*,
+                COALESCE(u.name, 'deleted') AS creator_name,
+                COALESCE(u.username, 'deleted') AS creator_username,
+                COUNT(uc.user_id)::INT AS used_by,
+                CASE 
+                        WHEN COUNT(CASE WHEN uc.user_id = ${user_id} THEN 1 END) > 0 THEN TRUE 
+                        ELSE FALSE 
+                    END AS enrolled
+            FROM ${this.tableName} AS c
+            LEFT JOIN ${User.tableName} AS u ON c.creator_id = u.id     
+            LEFT JOIN user_checklists AS uc ON c.id = uc.checklist_id
+            GROUP BY c.id, u.name, u.username
+            HAVING c.id = ${id};
+        `);
+      return new Checklist(result.rows[0]);
+    });
   }
 
   public static async findAllWithCreatorDetails(
     user_id: number,
     searchQuery: string = ''
-  ): Promise<Either<ChecklistWithCreatorProp[]>> {
-    return Either.tryAsync<ChecklistWithCreatorProp[]>(async () => {
+  ): Promise<Either<Checklist[]>> {
+    return Either.tryAsync<Checklist[]>(async () => {
       const result = await query(`
             SELECT 
                 c.*,
@@ -125,7 +139,7 @@ export default class Checklist extends DbModel implements ChecklistProps {
     });
   }
 
-  public async get_full(): Promise<Either<Record<string, any>>> {
+  public async get_full(user_id: number): Promise<Either<Record<string, any>>> {
     return Either.tryAsync<Record<string, any>>(async () => {
       const { val: ival, err: ierr } = await this.get_items();
       if (ierr) throw ierr;

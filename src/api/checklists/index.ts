@@ -21,13 +21,13 @@ checklistRouter.get('/', async (req, res) => {
 
 checklistRouter.get('/:id', async (req, res) => {
   const id = Number(req.params.id);
-
+  const user = (req as any).authUser;
   if (isNaN(id)) {
     res.status(400).json({ error: `Invalid ID ${req.params.id}` });
     return;
   }
 
-  const { val: checklist, err } = await Checklist.find(id);
+  const { val: checklist, err } = await Checklist.findWithCreatorDetails(id, user.id);
   if (err) {
     const status = getHttpStatusCode(err);
     res.status(status).json({ error: err.message });
@@ -36,19 +36,22 @@ checklistRouter.get('/:id', async (req, res) => {
     if (showFull !== '1') {
       return res.json(checklist);
     }
-    const { val: checklistFull, err } = await checklist!.get_full();
+    const { val: checklistFull, err } = await checklist!.get_full(user.id);
     if (err) {
       const status = getHttpStatusCode(err);
-      res.status(status).json({ error: err.message });
+      return res.status(status).json({ error: err.message });
     } else {
-      res.json(checklistFull);
+      return res.json(checklistFull);
     }
   }
 });
 
 checklistRouter.post('/', async (req, res) => {
-  // TODO : validate if the creator-id is the logged in user
-
+  const user = (req as any).authUser;
+  const creator_id = req.body.creator_id;
+  if (user.id !== creator_id) {
+    return res.status(409).json({ error: "Can't create checklist for other users" });
+  }
   const { val: checklist, err } = await Checklist.create(req.body);
   if (err) {
     const status = getHttpStatusCode(err);
