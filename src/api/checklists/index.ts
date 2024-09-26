@@ -62,7 +62,11 @@ checklistRouter.post('/', async (req, res) => {
 });
 
 checklistRouter.post('/enroll', async (req, res) => {
-  const user_id = req.body.user_id;
+  const user = (req as any).authUser; 
+  const user_id  = req.body.user_id;
+  if(user.id !== user_id){
+    return res.status(401);
+  }
   const checklist_id = req.body.checklist_id;
   const { val: user_checklist, err } = await Checklist.enroll(user_id, checklist_id);
   if (err) {
@@ -72,6 +76,24 @@ checklistRouter.post('/enroll', async (req, res) => {
     res
       .status(200)
       .json({ message: `${user_id} succesfully enrolled in checklist: ${checklist_id}` });
+  }
+});
+
+checklistRouter.delete('/leave', async (req, res) => {
+  const user = (req as any).authUser; 
+  const user_id  = req.body.user_id;
+  if(user.id !== user_id){
+    return res.status(401);
+  }
+  const checklist_id = req.body.checklist_id;
+  const { val: user_checklist, err } = await Checklist.leave(user_id, checklist_id);
+  if (err) {
+    const status = getHttpStatusCode(err);
+    res.status(status).json({ error: err.message });
+  } else {
+    res
+      .status(200)
+      .json({ message: `${user_id} succesfully left in checklist: ${checklist_id}` });
   }
 });
 
